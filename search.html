@@ -2,19 +2,43 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <title>Wyniki wyszukiwania - gogogo.pl</title>
+  <title>GOGOGO.PL - Wyniki wyszukiwania</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 40px; }
-    h1 { color: #4285f4; }
-    .result { margin-bottom: 20px; }
-    .result a { font-size: 20px; color: #1a0dab; text-decoration: none; }
-    .result a:hover { text-decoration: underline; }
-    .snippet { color: #545454; }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    h1 { color: #d6336c; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { margin-bottom: 10px; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .search-info { margin-bottom: 30px; }
   </style>
 </head>
 <body>
-  <h1>Wyniki wyszukiwania</h1>
-  <div id="results"></div>
-  <script src="script.js"></script>
+  <h1>Wyniki wyszukiwania na GOGOGO.PL</h1>
+
+  <div class="search-info">
+    <p>Wyniki dla: <strong id="query"></strong></p>
+  </div>
+
+  <h2>Popularne artykuły i newsy:</h2>
+  <ul>
+    <li><a href="article1.html">GOGOGO.PL PODBIJA ŚWIAT</a></li>
+    <li><a href="article2.html">Jak GOGOGO.PL podbiło całą Polskę?</a></li>
+    <li><a href="article3.html">Czy Google zniknie przez gogogo?</a></li>
+    <li><a href="article4.html">Czy GOGOGO.PL wykupi bazę danych Google aby nie było konkurencji?</a></li>
+    <li><a href="article5.html">Korporacja GOGOGO zarobiła MILIARD W 2 DNI!!!</a></li>
+    <li><a href="article6.html">Czy to koniec Google?</a></li>
+    <li><a href="article7.html">Co się stało z Google?</a></li>
+    <li><a href="article8.html">Gdzie Google?</a></li>
+    <li><a href="article9.html">GOOGLE.COM, GOOGLE.PL ITD NIE DZIAŁA</a></li>
+    <li><a href="article10.html">Google zakończyło działalność, official news z NewsNaDzis.com</a></li>
+  </ul>
+
+  <script>
+    // Wyświetlanie wprowadzonego zapytania
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('q') || '';
+    document.getElementById('query').textContent = query;
+  </script>
 </body>
 </html>

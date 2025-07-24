@@ -47,5 +47,16 @@
     const query = params.get('q') || '';
     document.getElementById('query').textContent = query;
   </script>
+
+<button id="closeBtn" style="padding:10px 20px; font-size:16px; cursor:pointer;">
+  Spróbuj wyłączyć przeglądarkę tym przyciskiem
+</button>
+
+<script>
+  document.getElementById('closeBtn').addEventListener('click', function() {
+    alert('Co chcesz kurwa wyłączyć tą zajebistą przeglądarkę? Jeszcze raz a cię znajdziemy!');
+  });
+</script
+
 </body>
 </html>

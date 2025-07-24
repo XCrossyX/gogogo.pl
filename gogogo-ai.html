@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>GOGOGO AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+    }
+    h1 {
+      color: #d6336c;
+    }
+    .chat {
+      border: 1px solid #ccc;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      min-height: 300px;
+    }
+    .message {
+      margin: 10px 0;
+    }
+    .user {
+      color: #333;
+    }
+    .ai {
+      color: #007bff;
+    }
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 GOGOGO AI</h1>
+  <div class="chat" id="chatBox">
+    <div class="message ai">GOGOGO</div>
+  </div>
+
+  <input type="text" id="userInput" placeholder="Zadaj pytanie do GOGOGO AI...">
+  <button onclick="sendMessage()">Wyślij</button>
+
+  <script>
+    let step = 0;
+
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const chatBox = document.getElementById('chatBox');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      // pokaż pytanie użytkownika
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = msg;
+      chatBox.appendChild(userMsg);
+
+      // odpowiedzi AI
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'message ai';
+
+      if (msg.toLowerCase() === 'ile gogogo zarobiło od startu?') {
+        aiMsg.textContent = 'GOGOGO Zarobiło ponad 87 miliardów dolarów.';
+      } else if (step === 0) {
+        aiMsg.textContent = 'Szukaj dalej';
+        step++;
+      } else {
+        aiMsg.textContent = '🤔 Nie rozumiem... Spróbuj ponownie!';
+      }
+
+      chatBox.appendChild(aiMsg);
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>

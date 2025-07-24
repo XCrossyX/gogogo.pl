@@ -6,81 +6,86 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f1f1f1;
-      padding: 30px;
-      max-width: 700px;
+      background-color: #fefefe;
+      padding: 20px;
+      max-width: 600px;
       margin: auto;
     }
+
     h1 {
       color: #d6336c;
     }
-    .chat {
+
+    #chatBox {
       border: 1px solid #ccc;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      min-height: 300px;
+      padding: 15px;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      background: #f9f9f9;
     }
-    .message {
-      margin: 10px 0;
-    }
-    .user {
-      color: #333;
-    }
-    .ai {
-      color: #007bff;
-    }
-    input, button {
-      padding: 10px;
-      margin-top: 10px;
+
+    input[type="text"] {
       width: 100%;
-      font-size: 1em;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #777;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>🤖 GOGOGO AI</h1>
-  <div class="chat" id="chatBox">
-    <div class="message ai">GOGOGO</div>
+  <div id="chatBox">
+    <div><strong>GOGOGO AI:</strong> GOGOGO</div>
   </div>
+  <input type="text" id="userInput" placeholder="Zadaj pytanie..." autocomplete="off" />
 
-  <input type="text" id="userInput" placeholder="Zadaj pytanie do GOGOGO AI...">
-  <button onclick="sendMessage()">Wyślij</button>
+  <div class="note">Naciśnij Enter, aby wysłać wiadomość</div>
 
   <script>
-    let step = 0;
+    const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("userInput");
 
-    function sendMessage() {
-      const input = document.getElementById('userInput');
-      const chatBox = document.getElementById('chatBox');
-      const msg = input.value.trim();
-      if (!msg) return;
-
-      // pokaż pytanie użytkownika
-      const userMsg = document.createElement('div');
-      userMsg.className = 'message user';
-      userMsg.textContent = msg;
-      chatBox.appendChild(userMsg);
-
-      // odpowiedzi AI
-      const aiMsg = document.createElement('div');
-      aiMsg.className = 'message ai';
-
-      if (msg.toLowerCase() === 'ile gogogo zarobiło od startu?') {
-        aiMsg.textContent = 'GOGOGO Zarobiło ponad 87 miliardów dolarów.';
-      if (msg.toLowerCase() === 'Ile GOGOGO zarobiło od startu?') {
-        aiMsg.textContent = 'GOGOGO Zarobiło ponad 87 miliardów dolarów.';
-      } else if (step === 0) {
-        aiMsg.textContent = 'Szukaj dalej';
-        step++;
-      } else {
-        aiMsg.textContent = '🤔 Nie rozumiem... Spróbuj ponownie!';
-      }
-
-      chatBox.appendChild(aiMsg);
-      input.value = '';
+    function addMessage(from, text) {
+      const message = document.createElement("div");
+      message.innerHTML = `<strong>${from}:</strong> ${text}`;
+      chatBox.appendChild(message);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    function respondToUser(msg) {
+      let response = "Szukaj dalej";
+
+      if (msg.toLowerCase().includes("ile gogogo zarobiło")) {
+        response = "GOGOGO zarobiło ponad 87 miliardów dolarów.";
+      }
+
+      addMessage("GOGOGO AI", response);
+    }
+
+    function sendMessage() {
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      addMessage("Ty", userText);
+      respondToUser(userText);
+      input.value = "";
+    }
+
+    // Obsługa klawisza Enter
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        sendMessage();
+        event.preventDefault();
+      }
+    });
   </script>
 </body>
 </html>

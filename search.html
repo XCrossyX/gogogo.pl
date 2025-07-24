@@ -180,30 +180,6 @@
   }
 </script>
 
-<hr style="margin: 40px 0; border: 1px dashed #888;">
-<h2>🗣️ GOGOGO MÓWI</h2>
-<p>Wpisz cokolwiek, a GOGOGO TO WYPOWIE:</p>
-
-<input type="text" id="gogogoText" placeholder="Co ma powiedzieć GOGOGO?" style="width: 100%; padding: 10px; font-size: 16px;" />
-<br><br>
-<button onclick="gogogoSpeak()" style="padding: 10px 20px; font-size: 16px; background-color: #d6336c; color: white; border: none; border-radius: 5px;">🔊 MÓW GOGOGO!</button>
-
-<script>
-  function gogogoSpeak() {
-    const text = document.getElementById("gogogoText").value;
-    if (!text.trim()) {
-      alert("Wpisz coś, zanim GOGOGO przemówi!");
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "pl-PL"; // Polski język
-    utterance.rate = 1; // Szybkość mowy
-    speechSynthesis.speak(utterance);
-  }
-</script>
-
-
 
 </body>
 </html>

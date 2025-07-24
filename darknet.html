@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>DarkNet GOGOGO</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: "Courier New", monospace;
+      padding: 20px;
+    }
+    #console {
+      white-space: pre-wrap;
+      font-size: 16px;
+    }
+    input {
+      background: #000;
+      border: none;
+      color: #00ff00;
+      font-family: inherit;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="console">
+    GOGOGO DARKNET INTERFACE [v1.0.0]\n
+    Witaj w tajnym systemie GOGOGO.
+    Wpisz polecenie, np. <i>hack google</i>, <i>status</i>, <i>exit</i>\n
+  </div>
+  <input type="text" id="commandInput" autofocus onkeydown="handleCommand(event)">
+
+  <script>
+    const consoleBox = document.getElementById('console');
+    const input = document.getElementById('commandInput');
+
+    function appendToConsole(text) {
+      consoleBox.innerText += "\n" + text;
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function handleCommand(e) {
+      if (e.key === 'Enter') {
+        const cmd = input.value.trim().toLowerCase();
+        appendToConsole("> " + cmd);
+        input.value = '';
+
+        switch (cmd) {
+          case "hack google":
+            appendToConsole("✅ Google zostało zhakowane. GOGOGO jest teraz właścicielem YouTube i Google Maps.");
+            break;
+          case "status":
+            appendToConsole("🛰️ Systemy GOGOGO operacyjne. Hakerzy gotowi. Serwery działają na sokach z buraka.");
+            break;
+          case "exit":
+            appendToConsole("💀 Rozłączono z DarkNet GOGOGO.");
+            input.disabled = true;
+            break;
+          case "help":
+            appendToConsole("Dostępne komendy: hack google, status, exit, clear, gogogo");
+            break;
+          case "clear":
+            consoleBox.innerText = "GOGOGO DARKNET INTERFACE [v1.0.0]";
+            break;
+          case "gogogo":
+            appendToConsole("🚀 GOGOGO uruchomione na 98% internetu.");
+            break;
+          default:
+            appendToConsole("❌ Nieznana komenda. Wpisz 'help'.");
+        }
+      }
+    }
+  </script>
+</body>
+</html>

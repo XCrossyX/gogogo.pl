@@ -14,7 +14,7 @@
       white-space: pre-wrap;
       font-size: 16px;
     }
-    input {
+    input, button {
       background: #000;
       border: none;
       color: #00ff00;
@@ -23,15 +23,35 @@
       width: 100%;
       outline: none;
     }
+    button {
+      border: 1px solid #00ff00;
+      padding: 10px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    button:disabled {
+      color: #444;
+      border-color: #444;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <div id="console">
-    GOGOGO DARKNET INTERFACE [v1.0.0]\n
+    GOGOGO DARKNET INTERFACE [v1.0.4]\n
     Witaj w tajnym systemie GOGOGO.
     Wpisz polecenie, np. <i>hack google</i>, <i>status</i>, <i>exit</i>\n
   </div>
   <input type="text" id="commandInput" autofocus onkeydown="handleCommand(event)">
+
+  <div style="margin-top: 40px; color: #0f0; font-family: monospace;">
+    <label for="secret-input">> Wprowadź kod dostępu:</label><br>
+    <input type="text" id="secret-input" placeholder="Wpisz kod i wciśnij Enter">
+    <div id="secret-message" style="margin-top: 20px;"></div>
+
+    <button id="wipeDataBtn" onclick="wipeGoogleData()" disabled>🧹 Wyczyść dane Google</button>
+    <div id="wipeStatus" style="margin-top: 20px;"></div>
+  </div>
 
   <script>
     const consoleBox = document.getElementById('console');
@@ -73,27 +93,43 @@
         }
       }
     }
-  </script>
 
-  <div style="margin-top: 40px; color: #0f0; font-family: monospace;">
-  <label for="secret-input">> Wprowadź kod dostępu:</label><br>
-  <input type="text" id="secret-input" style="background: black; color: #0f0; border: 1px solid #0f0; padding: 4px;" placeholder="Wpisz kod i wciśnij Enter">
-  <div id="secret-message" style="margin-top: 20px;"></div>
-</div>
+    document.getElementById("secret-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const input = e.target.value.trim();
+        const output = document.getElementById("secret-message");
+        const btn = document.getElementById("wipeDataBtn");
 
-<script>
-  document.getElementById("secret-input").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      const input = e.target.value.trim();
-      const output = document.getElementById("secret-message");
-      if (input === "gogogosecty47eit") {
-        output.innerHTML = "<b>DOSTĘP NADANY</b><br>Łączenie z <span style='color:#f0f'>GOGOGO ULTRA CORE...</span><br><i>Witaj w ukrytej jednostce. Dane przetwarzane.</i>";
-      } else {
-        output.innerHTML = "<span style='color: #f33'>BŁĘDNY KOD</span><br>Próba nieautoryzowanego dostępu została zapisana.";
+        if (input === "gogogosecty47eit") {
+          output.innerHTML = "<b>DOSTĘP NADANY</b><br>Łączenie z <span style='color:#f0f'>GOGOGO ULTRA CORE...</span><br><i>Witaj w ukrytej jednostce. Dane przetwarzane.</i>";
+          btn.disabled = false;
+        } else {
+          output.innerHTML = "<span style='color: #f33'>BŁĘDNY KOD</span><br>Próba nieautoryzowanego dostępu została zapisana.";
+          btn.disabled = true;
+        }
       }
-    }
-  });
-</script>
+    });
 
+    function wipeGoogleData() {
+      const statusDiv = document.getElementById("wipeStatus");
+      const messages = [
+        "Restartuje dane Google 4%",
+        "Restartuje dane Google 12%",
+        "Restartuje dane Google 31%",
+        "Restartuje dane Google 79%",
+        "Restartuje dane Google 99%",
+        "<b>Status Danych Google:</b> <span style='color:lime'>Zrestartowane</span>"
+      ];
+
+      statusDiv.innerHTML = "";
+      let index = 0;
+
+      const interval = setInterval(() => {
+        statusDiv.innerHTML += messages[index] + "<br>";
+        index++;
+        if (index === messages.length) clearInterval(interval);
+      }, 1000);
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Paper.io Clone</title>
+  <style>
+    html, body {
+      margin: 0;
+      background: #000;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: #111;
+    }
+  </style>
+</head>
+<body>
+<canvas id="game" width="800" height="800"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const gridSize = 20;
+const cols = canvas.width / gridSize;
+const rows = canvas.height / gridSize;
+
+const map = Array.from({ length: cols }, () => Array(rows).fill(null));
+const players = [];
+
+const COLORS = ["#00f", "#f00", "#0f0", "#ff0", "#f0f", "#0ff"];
+
+class Player {
+  constructor(x, y, color, isBot = false) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.dx = 1;
+    this.dy = 0;
+    this.isBot = isBot;
+    this.trail = [];
+    this.territory = new Set();
+    this.alive = true;
+    this.botTimer = 0;
+    this.id = Math.random().toString(36).substring(2, 8);
+    map[x][y] = this.id;
+    this.territory.add(`${x},${y}`);
+  }
+
+  get pos() {
+    return `${this.x},${this.y}`;
+  }
+
+  move() {
+    if (!this.alive) return;
+
+    this.x += this.dx;
+    this.y += this.dy;
+
+    if (this.x < 0 || this.x >= cols || this.y < 0 || this.y >= rows) {
+      this.alive = false;
+      return;
+    }
+
+    const pos = `${this.x},${this.y}`;
+
+    if (!this.territory.has(pos)) {
+      this.trail.push(pos);
+    } else {
+      // Zamknięcie pętli
+      for (const t of this.trail) {
+        const [tx, ty] = t.split(',').map(Number);
+        map[tx][ty] = this.id;
+        this.territory.add(t);
+      }
+      this.trail = [];
+    }
+  }
+
+  draw() {
+    if (!this.alive) return;
+
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        if (map[i][j] === this.id) {
+          ctx.fillStyle = this.color;
+          ctx.fillRect(i * gridSize, j * gridSize, gridSize, gridSize);
+        }
+      }
+    }
+
+    // Trail
+    for (const t of this.trail) {
+      const [tx, ty] = t.split(',').map(Number);
+      ctx.fillStyle = this.color;
+      ctx.fillRect(tx * gridSize, ty * gridSize, gridSize, gridSize);
+    }
+
+    // Player head
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(this.x * gridSize, this.y * gridSize, gridSize, gridSize);
+  }
+
+  botAI(target) {
+    if (!this.isBot || !this.alive) return;
+    this.botTimer++;
+    if (this.botTimer % 10 !== 0) return;
+
+    const dx = target.x - this.x;
+    const dy = target.y - this.y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      this.dx = dx > 0 ? 1 : -1;
+      this.dy = 0;
+    } else {
+      this.dx = 0;
+      this.dy = dy > 0 ? 1 : -1;
+    }
+
+    // Losowość
+    if (Math.random() < 0.1) {
+      const dirs = [[1,0], [-1,0], [0,1], [0,-1]];
+      const [ndx, ndy] = dirs[Math.floor(Math.random() * 4)];
+      this.dx = ndx;
+      this.dy = ndy;
+    }
+  }
+}
+
+const player = new Player(5, 5, COLORS[0], false);
+players.push(player);
+
+// 5 botów
+for (let i = 1; i <= 5; i++) {
+  const bot = new Player(
+    Math.floor(Math.random() * cols),
+    Math.floor(Math.random() * rows),
+    COLORS[i],
+    true
+  );
+  players.push(bot);
+}
+
+document.addEventListener("keydown", e => {
+  if (!player.alive) return;
+  if (e.key === "ArrowUp" && player.dy === 0) [player.dx, player.dy] = [0, -1];
+  if (e.key === "ArrowDown" && player.dy === 0) [player.dx, player.dy] = [0, 1];
+  if (e.key === "ArrowLeft" && player.dx === 0) [player.dx, player.dy] = [-1, 0];
+  if (e.key === "ArrowRight" && player.dx === 0) [player.dx, player.dy] = [1, 0];
+});
+
+function checkCollisions() {
+  for (const p of players) {
+    if (!p.alive) continue;
+    const pos = `${p.x},${p.y}`;
+    for (const enemy of players) {
+      if (enemy === p || !enemy.alive) continue;
+      if (enemy.trail.includes(pos)) {
+        p.alive = false;
+      }
+      if (p.trail.includes(`${enemy.x},${enemy.y}`)) {
+        enemy.alive = false;
+      }
+    }
+  }
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const alivePlayers = players.filter(p => p.alive);
+  for (const p of players) {
+    if (p.isBot) p.botAI(player);
+    p.move();
+  }
+
+  checkCollisions();
+
+  for (const p of players) p.draw();
+
+  if (!player.alive) {
+    ctx.fillStyle = "white";
+    ctx.font = "50px sans-serif";
+    ctx.fillText("PRZEGRAŁEŚ!", 250, 400);
+    return;
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>

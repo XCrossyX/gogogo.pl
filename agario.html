@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Agar.io Light</title>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas {
+      display: block;
+      background: #111;
+    }
+  </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const player = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  radius: 30,
+  color: "white",
+  speed: 2
+};
+
+let mouseX = player.x;
+let mouseY = player.y;
+
+const food = [];
+const bots = [];
+
+function randomColor() {
+  return `hsl(${Math.random() * 360}, 100%, 60%)`;
+}
+
+function spawnFood(n = 100) {
+  for (let i = 0; i < n; i++) {
+    food.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: 5,
+      color: randomColor()
+    });
+  }
+}
+
+function spawnBots(n = 2) {
+  for (let i = 0; i < n; i++) {
+    bots.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: 25 + Math.random() * 10,
+      color: randomColor(),
+      dx: (Math.random() - 0.5) * 0.5,
+      dy: (Math.random() - 0.5) * 0.5
+    });
+  }
+}
+
+document.addEventListener("mousemove", e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function moveTowards(target, source, speed) {
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist > 1) {
+    source.x += (dx / dist) * speed;
+    source.y += (dy / dist) * speed;
+  }
+}
+
+function checkCollision(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  const dist = Math.hypot(dx, dy);
+  return dist < a.radius + b.radius;
+}
+
+function drawCircle(obj) {
+  ctx.beginPath();
+  ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2);
+  ctx.fillStyle = obj.color;
+  ctx.fill();
+}
+
+function updateBots() {
+  for (const b of bots) {
+    b.x += b.dx;
+    b.y += b.dy;
+
+    // Bounce from edges
+    if (b.x < 0 || b.x > canvas.width) b.dx *= -1;
+    if (b.y < 0 || b.y > canvas.height) b.dy *= -1;
+  }
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Move player toward mouse
+  moveTowards({ x: mouseX, y: mouseY }, player, player.speed * (30 / player.radius));
+
+  // Draw food & check collision with player
+  for (let i = food.length - 1; i >= 0; i--) {
+    const f = food[i];
+    drawCircle(f);
+    if (checkCollision(player, f)) {
+      player.radius += 0.4;
+      food.splice(i, 1);
+    }
+  }
+
+  // Draw and update bots
+  updateBots();
+
+  for (let i = bots.length - 1; i >= 0; i--) {
+    const bot = bots[i];
+    drawCircle(bot);
+
+    // Player can eat bot if bigger
+    if (checkCollision(player, bot) && player.radius > bot.radius + 5) {
+      player.radius += bot.radius * 0.3;
+      bots.splice(i, 1);
+    }
+  }
+
+  // Draw player
+  drawCircle(player);
+
+  // Respawn food if low
+  if (food.length < 50) spawnFood(20);
+
+  requestAnimationFrame(gameLoop);
+}
+
+spawnFood();
+spawnBots();
+gameLoop();
+</script>
+</body>
+</html>

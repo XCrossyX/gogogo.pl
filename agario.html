@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Agar.io Light</title>
+  <meta charset="UTF-8" />
+  <title>Agar.io Advanced</title>
   <style>
     html, body {
-      margin: 0;
-      overflow: hidden;
-      background: #000;
+      margin: 0; overflow: hidden; background: #000; font-family: Arial, sans-serif;
+      user-select: none;
     }
     canvas {
-      display: block;
-      background: #111;
+      display: block; background: #111;
+    }
+    #score {
+      position: fixed; top: 5px; left: 5px; color: #eee; font-weight: bold; font-size: 18px;
+      text-shadow: 0 0 5px #000;
+      user-select: none;
     }
   </style>
 </head>
 <body>
+<div id="score">Rozmiar: 30</div>
 <canvas id="game"></canvas>
 <script>
 const canvas = document.getElementById("game");
@@ -28,7 +32,8 @@ const player = {
   y: canvas.height / 2,
   radius: 30,
   color: "white",
-  speed: 2
+  speed: 2,
+  name: "Ty",
 };
 
 let mouseX = player.x;
@@ -37,30 +42,33 @@ let mouseY = player.y;
 const food = [];
 const bots = [];
 
+const botNames = ["AI_Killer", "Bot_Mozg", "Glon", "Smok", "Rex", "Złom", "Turbo"];
+
 function randomColor() {
   return `hsl(${Math.random() * 360}, 100%, 60%)`;
 }
 
-function spawnFood(n = 100) {
-  for (let i = 0; i < n; i++) {
+function spawnFood(n = 150) {
+  for(let i=0; i<n; i++) {
     food.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       radius: 5,
-      color: randomColor()
+      color: randomColor(),
     });
   }
 }
 
-function spawnBots(n = 2) {
-  for (let i = 0; i < n; i++) {
+function spawnBots(n = 7) {
+  for(let i=0; i<n; i++) {
     bots.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      radius: 25 + Math.random() * 10,
+      radius: 20 + Math.random() * 15,
       color: randomColor(),
       dx: (Math.random() - 0.5) * 0.5,
-      dy: (Math.random() - 0.5) * 0.5
+      dy: (Math.random() - 0.5) * 0.5,
+      name: botNames[i] || "Bot"+(i+1),
     });
   }
 }
@@ -74,13 +82,13 @@ function moveTowards(target, source, speed) {
   const dx = target.x - source.x;
   const dy = target.y - source.y;
   const dist = Math.hypot(dx, dy);
-  if (dist > 1) {
+  if(dist > 1) {
     source.x += (dx / dist) * speed;
     source.y += (dy / dist) * speed;
   }
 }
 
-function checkCollision(a, b) {
+function checkCollision(a,b) {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
   const dist = Math.hypot(dx, dy);
@@ -89,57 +97,116 @@ function checkCollision(a, b) {
 
 function drawCircle(obj) {
   ctx.beginPath();
-  ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2);
+  ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI*2);
   ctx.fillStyle = obj.color;
   ctx.fill();
 }
 
-function updateBots() {
-  for (const b of bots) {
-    b.x += b.dx;
-    b.y += b.dy;
+function drawText(text, x, y, size=14, color="white") {
+  ctx.font = `${size}px Arial`;
+  ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.fillText(text, x, y);
+}
 
-    // Bounce from edges
-    if (b.x < 0 || b.x > canvas.width) b.dx *= -1;
-    if (b.y < 0 || b.y > canvas.height) b.dy *= -1;
+function updateBots() {
+  for(const b of bots) {
+    // AI logic:
+    // Jeśli gracz jest większy + trochę zapasu, uciekaj od niego
+    const distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+
+    if(player.radius > b.radius + 5 && distToPlayer < 250) {
+      // Ucieczka
+      let angle = Math.atan2(b.y - player.y, b.x - player.x);
+      b.dx = Math.cos(angle) * 0.7;
+      b.dy = Math.sin(angle) * 0.7;
+    } else if(b.radius > player.radius + 5 && distToPlayer < 300) {
+      // Atak na gracza (przyspieszenie w jego stronę)
+      moveTowards(player, b, 0.9);
+      continue; // skip normal move update
+    } else {
+      // Wolny losowy ruch
+      b.x += b.dx;
+      b.y += b.dy;
+      // Czasem zmieniamy kierunek
+      if(Math.random() < 0.01) {
+        b.dx = (Math.random() - 0.5) * 0.5;
+        b.dy = (Math.random() - 0.5) * 0.5;
+      }
+    }
+
+    // Odbicie od ścian
+    if(b.x < b.radius) { b.x = b.radius; b.dx *= -1; }
+    if(b.x > canvas.width - b.radius) { b.x = canvas.width - b.radius; b.dx *= -1; }
+    if(b.y < b.radius) { b.y = b.radius; b.dy *= -1; }
+    if(b.y > canvas.height - b.radius) { b.y = canvas.height - b.radius; b.dy *= -1; }
   }
 }
+
+let flashEffect = null; // {x, y, radius, alpha}
 
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Move player toward mouse
-  moveTowards({ x: mouseX, y: mouseY }, player, player.speed * (30 / player.radius));
+  moveTowards({x: mouseX, y: mouseY}, player, player.speed * (30 / player.radius));
 
-  // Draw food & check collision with player
-  for (let i = food.length - 1; i >= 0; i--) {
+  // Draw and check food collisions
+  for(let i=food.length-1; i>=0; i--) {
     const f = food[i];
     drawCircle(f);
-    if (checkCollision(player, f)) {
+    if(checkCollision(player, f)) {
       player.radius += 0.4;
       food.splice(i, 1);
     }
+    for(const b of bots) {
+      if(checkCollision(b, f)) {
+        b.radius += 0.4;
+        food.splice(i, 1);
+        break;
+      }
+    }
   }
 
-  // Draw and update bots
+  // Update bots AI and movement
   updateBots();
 
-  for (let i = bots.length - 1; i >= 0; i--) {
+  // Draw bots and check collision with player (player can eat bot)
+  for(let i=bots.length-1; i>=0; i--) {
     const bot = bots[i];
     drawCircle(bot);
+    drawText(bot.name, bot.x, bot.y - bot.radius - 10, 14, "#eee");
+    drawText(Math.floor(bot.radius), bot.x, bot.y + 5, 14, "#eee");
 
-    // Player can eat bot if bigger
-    if (checkCollision(player, bot) && player.radius > bot.radius + 5) {
-      player.radius += bot.radius * 0.3;
+    if(checkCollision(player, bot) && player.radius > bot.radius + 5) {
+      // Player eats bot
+      player.radius += bot.radius * 0.4;
+      flashEffect = {x: bot.x, y: bot.y, radius: bot.radius, alpha: 1};
       bots.splice(i, 1);
     }
   }
 
-  // Draw player
+  // Draw player and info
   drawCircle(player);
+  drawText(player.name, player.x, player.y - player.radius - 10, 18, "white");
+  drawText(Math.floor(player.radius), player.x, player.y + 7, 18, "white");
 
-  // Respawn food if low
-  if (food.length < 50) spawnFood(20);
+  // Flash effect on bot eaten
+  if(flashEffect) {
+    ctx.beginPath();
+    ctx.arc(flashEffect.x, flashEffect.y, flashEffect.radius + 10, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(255,255,255,${flashEffect.alpha})`;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    flashEffect.alpha -= 0.03;
+    if(flashEffect.alpha <= 0) flashEffect = null;
+  }
+
+  // Spawn more food if low
+  if(food.length < 80) spawnFood(20);
+
+  // Update score display
+  document.getElementById("score").textContent = `Rozmiar: ${Math.floor(player.radius)}`;
 
   requestAnimationFrame(gameLoop);
 }
@@ -147,6 +214,7 @@ function gameLoop() {
 spawnFood();
 spawnBots();
 gameLoop();
+
 </script>
 </body>
 </html>
